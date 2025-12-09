@@ -1,0 +1,41 @@
+//ether1 -> publik
+//ether2 -> lokal
+
+system reset -> y
+interface pr
+interface set 0 name=publik
+interface set 1 name=lokal
+ip address add address=172.16.100.x/16 interface=publik
+ip address add address=192.168.x.1/24 interface=lokal
+ip address pr
+ip route add gateaway=172.16.0.1
+ip route pr
+ip dns set servers=8.8.8.8 allow-remote-request=yes
+ip dns pr
+ip firewall nat add chain=srcnat out-interface=publik action=masquerade
+ping 8.8.8.8
+//harusnya udh tersambung dengan ip yang dikasih interface lokal
+
+//setup wifi tanpa password
+ip dhcp-server setup -> interface=lokal //langsung tersambung tanpa mengisi ip karena udh ada dhcp
+interface wireless set 0 mode=ap-brigde ssid"namawifianda" band=2ghz-b/g/n frequency=2437
+interface wireless enable numbers=0
+ip address add address=192.168.x + 10.1/24 interface=wlan1
+ip dhcp-server setup -> interface=wlan1
+
+//setup hotspot
+ip hotspot setup -> interface=wlan1 masquerade=yes certificate=none dnsname=namadns.xyz("opsional") user=admin password=12345678
+ip hostopt user add name=guru password=123 profile=default
+
+//teknik blokir(?% BERHASIL)
+ip proxy set enabled=yes dst-port=80
+ip firewall nat add chain=dstnat protocol=tcp in-interface=wlan1 action=redirect to-port=8080
+
+//mp4
+ip proxy access add path-regex="\\.(mp4)$" action=deny
+
+//mp3
+ip proxy access add path-regex="\\.(mp3)$" action=deny
+
+//web (http only)
+ip proxy access add dst-host="*httpforever.com*" action=deny
