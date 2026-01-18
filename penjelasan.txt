@@ -1,0 +1,164 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Tentu, mari kita bedah langkah demi langkah dari dokumen persiapan UKK (Uji Kompetensi Keahlian) Mikrotik tersebut. Secara garis besar, tugas ini meminta kamu membangun jaringan dengan dua router (R1 dan R2) yang saling terhubung menggunakan protokol OSPF, melakukan Web Proxy untuk memblokir situs, dan membagi koneksi melalui Kabel serta Wi-Fi.
+
+Berikut adalah penjelasan fungsi perintahnya:
+
+1. Konfigurasi Router 1 (R1) - Fokus: Kabel & Proxy
+R1 bertugas sebagai gerbang internet utama dan pengatur pemblokiran situs.
+
+Pengaturan IP Address:
+
+
+ip address add address=172.16.(200+absen).1/16 interface=ether1: Memberikan alamat IP pada jalur masuk internet.
+
+
+ip address add address=192.(200+absen).10.1/24 interface=ether2: Memberikan alamat IP untuk jaringan lokal (LAN) yang menggunakan kabel.
+
+Koneksi Internet:
+
+
+ip route add gateway=172.16.0.1: Menentukan "pintu keluar" menuju internet.
+
+
+ip dns set servers=8.8.8.8: Mengatur DNS agar router bisa mengenali nama domain seperti https://www.google.com/search?q=google.com.
+
+
+ip firewall nat ... action=masquerade: Fitur NAT ini sangat penting agar perangkat di bawah router bisa ikut berinternet menggunakan IP router.
+
+Web Proxy (Pemblokiran Situs):
+
+
+ip proxy set enable=yes ...: Mengaktifkan fitur Proxy di router.
+
+
+ip firewall nat ... action=redirect to-ports=3128: Memaksa semua lalu lintas browsing (port 80) melewati Proxy agar bisa disaring.
+
+
+ip proxy access add dst-host={web} action=deny: Perintah spesifik untuk melarang akses ke situs tertentu.
+
+2. Konfigurasi Router 2 (R2) - Fokus: Wi-Fi (Wireless)
+R2 bertugas menyebarkan internet melalui sinyal Wi-Fi.
+
+Pengaturan Wireless:
+
+
+interface enable wlan1: Menyalakan perangkat Wi-Fi di router.
+
+
+interface wireless set ... ssid=”joko”: Mengatur nama Wi-Fi (SSID) menjadi "joko".
+
+
+interface wireless security-profiles ...: Mengatur kata sandi Wi-Fi (dalam dokumen ini password-nya: paijo123).
+
+DHCP Server:
+
+
+ip dhcp-server setup: Perintah otomatis agar HP atau laptop yang terhubung ke Wi-Fi langsung mendapatkan IP secara otomatis tanpa perlu setting manual.
+
+3. Routing Dinamis (OSPF)
+Ini adalah bagian yang paling teknis. OSPF digunakan agar R1 dan R2 bisa "saling sapa" dan berbagi rute secara otomatis tanpa kamu harus mendaftarkan IP satu per satu.
+
+
+routing ospf interface add interface=ether1: Memberitahu router untuk mencari tetangga router lain melalui kabel di ether1.
+
+
+
+routing ospf network add network=... area=backbone: Mendaftarkan jaringan yang dimiliki masing-masing router ke dalam grup OSPF agar router tetangga mengetahuinya.
+
+
+4. Tahap Pengujian
+Setelah setting selesai, kamu harus memastikan semuanya berjalan lancar:
+
+
+Ping Google: Memastikan koneksi internet sudah sampai ke client.
+
+
+
+Ping antar Router: Memastikan OSPF berhasil (Client di R1 bisa memanggil IP R2, dan sebaliknya).
+
+
+
+Tes Proxy: Memastikan situs yang kamu blokir tadi benar-benar tidak bisa dibuka di browser.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Berdasarkan dokumen instruksi UKK 2024/2025 Paket 2 untuk konsentrasi keahlian Teknik Komputer dan Jaringan , kamu diminta untuk berperan sebagai Network System Administrator. Tugas utamanya adalah melakukan rancang bangun keamanan jaringan, instalasi, dan konfigurasi Dynamic Routing.
+
+
+
+
+Berikut adalah rincian instruksi kerja yang harus kamu lakukan:
+
+1. Persiapan dan Pemasangan Fisik
+
+Persiapan Peralatan: Siapkan PC client, smartphone, switch unmanaged, router, dan Wi-Fi routerboard.
+
+
+
+Kabel Jaringan: Buatlah konektor RJ45 pada kabel UTP (Crimping) dan uji menggunakan cable tester.
+
+
+
+Instalasi Fisik: Hubungkan kabel dari ISP ke switch, lalu ke router, proxy server, dan client sesuai topologi.
+
+
+2. Konfigurasi Jaringan (Addressing)
+Kamu harus mengatur IP Address pada tiga sisi jaringan:
+
+
+Jaringan Internet (WAN): IP Router A, Router B, dan Gateway harus sesuai dengan jaringan yang diberikan oleh ISP.
+
+
+
+Jaringan Lokal Kabel (LAN): Menggunakan IP 192.200+absen.10.1/24. Pada jaringan ini, DHCP Server dinonaktifkan (No), sehingga client harus mengisi IP secara manual (Static).
+
+
+
+
+Jaringan Lokal Nirkabel (WLAN): Menggunakan IP 192.100+absen.20.1/24. DHCP Server diaktifkan (Yes) dengan jumlah 99 client dan Lease Time 8 jam.
+
+
+
+
+
+SSID: Gunakan Nama Peserta.
+
+
+Password: ukktkj2026.
+
+
+DNS: Primary 8.8.8.8.
+
+3. Konfigurasi Routing dan Keamanan
+Routing:
+
+Gunakan Dynamic Routing untuk menghubungkan Router A ke Router B.
+
+Gunakan Static Routing untuk menghubungkan Router B ke Internet.
+
+Keamanan Jaringan (Proxy Server):
+
+Install dan konfigurasi Proxy Server pada jaringan LAN kabel.
+
+
+Port Proxy: 3128.
+
+
+Transparent Proxy: Diaktifkan (Yes).
+
+
+Cache Manager: Noabsen+namapeserta@sekolah.sch.id.
+
+
+Blocking Site: Blokir minimal 2 alamat website.
+
+4. Pengujian Hasil Kerja
+Setelah semua dikonfigurasi, kamu wajib memastikan:
+
+Client LAN bisa terhubung dengan IP Static.
+
+Client WLAN (HP/Laptop) mendapatkan IP otomatis.
+
+Semua perangkat bisa melakukan Ping ke Router dan antar client.
+
+Situs yang diblokir tidak dapat diakses melalui browser.
+
+Buatlah dokumentasi jaringan sederhana sebagai laporan hasil kerja.
